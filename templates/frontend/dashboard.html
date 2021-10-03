@@ -1,0 +1,152 @@
+{% extends 'authentication/base.html' %}
+{% load static %}
+
+
+{% block title %}
+	Dashboard
+{% endblock %}
+
+{% block body %}
+	<style type="text/css">
+		.inputbtn {
+		    position: absolute;
+		    top: 0;
+		    bottom: 0;
+		    margin: auto;
+		    width: 35px;
+		    padding: 7px;
+		    display: flex;
+		    border: 1px solid #ddd;
+		    align-items: center;
+		    justify-content: center;
+		}
+
+		.plus.inputbtn {
+		    right: 0;
+		}
+
+		.minus.inputbtn {
+		    left: 0;
+		}
+	</style>
+
+	<div class="card">
+	  <h5 class="card-header">Registration</h5>
+	  <div class="card-body">
+	  	{% if messages %}
+          {% for message in messages %}
+			    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-0" role="alert">
+			        <strong>Message:</strong> {{ message }}
+			        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			            <span aria-hidden="true">&times;</span>
+			        </button>
+			    </div>
+			  {% endfor %}
+        {% endif %}
+        {% if User %}
+		    <form action="/update_user_profile" method="post" enctype="multipart/form-data">
+		    	{% csrf_token %}
+				<div class="form-group">
+					<input type="hidden" name="user_id" id="user_id" value="{{User.user_id}}">
+					<label for="user_name">User Name</label>
+					<input type="text" class="form-control" id="user_name" name="user_name" value="{{User.full_name}}" placeholder="Enter User Name" readonly>
+				</div>
+				<div class="form-group">
+					<label for="mobile_number">Mobile Number</label>
+					<input type="text" class="form-control" id="mobile_number" name="mobile_number" value="{{User.mobile_number}}" readonly>
+				</div>
+				<div class="form-group">
+					<label for="primary_email_address">Primary Email Address</label>
+					<input type="email" class="form-control" id="primary_email_address" name="primary_email_address" aria-describedby="emailHelp" placeholder="Enter Primary Email Address" value="{{User.email_address}}" required>
+				</div>
+				<div class="append_div">
+					{% if User_email %}
+						{% for usemail in User_email %}
+							{% if loop.last %}
+								<div class="form-row">
+									<div class="form-group col-md-10">
+										<label for="secondary_email_address">Secondary Email Address</label>
+										<input type="email" class="form-control" id="secondary_email_address" name="secondary_email_address" aria-describedby="emailHelp" value="{{ usemail.email }}" required>
+									</div>
+									<div class="form-group col-md-1">
+					                    <label>&nbsp;</label><br>
+					                    <a class="btn btn-success add_button" id="add_ingredients_list" style="color:#fff">
+					                        <i class="fa fa-plus"></i>
+					                    </a>
+					                </div>
+				                </div>
+							{% else %}
+								<div class="form-row">
+									<div class="form-group col-md-10">
+										<label for="secondary_email_address">Secondary Email Address</label>
+										<input type="email" class="form-control" id="secondary_email_address" name="secondary_email_address" aria-describedby="emailHelp" value="{{ usemail.email }}" required>
+									</div>
+									<div class="form-group col-md-1">
+					                    <label>&nbsp;</label><br>
+					                    <a class="btn btn-danger remove_div" id="add_ingredients_list" style="color:#fff">
+					                        <i class="fa fa-minus"></i>
+					                    </a>
+					                </div>
+				                </div>
+							{% endif %}
+						{% endfor %}
+					{% else %}
+						<div class="form-row">
+							<div class="form-group col-md-10">
+								<label for="secondary_email_address">Secondary Email Address</label>
+								<input type="email" class="form-control" id="secondary_email_address" name="secondary_email_address" aria-describedby="emailHelp" placeholder="Enter Secondary Email Address" required>
+							</div>
+							<div class="form-group col-md-1">
+			                    <label>&nbsp;</label><br>
+			                    <a class="btn btn-success add_button" id="add_ingredients_list" style="color:#fff">
+			                        <i class="fa fa-plus"></i>
+			                    </a>
+			                </div>
+		                </div>
+					{% endif %}
+	            </div>
+				
+				<button type="submit" class="btn btn-primary">Submit</button>
+			</form>
+		{% endif %}
+	  </div>
+	</div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+	        $(document).on('click', ".add_button", function() {
+            // Add ingredients
+            $(this).parents(".append_div").append('<div class="form-row"><div class="form-group col-md-10"><label for="secondary_email_address">Secondary Email Address</label><input type="email" class="form-control" id="secondary_email_address" name="secondary_email_address" aria-describedby="emailHelp" placeholder="Enter Secondary Email Address" required></div><div class="form-group col-md-1"><label>&nbsp;</label><br><a class="btn btn-success plus_button" id="add_ingredients_list" style="color:#fff"><i class="fa fa-plus"></i></a></div></div>');
+
+            $(this).removeClass('add_button');
+            $(this).addClass('remove_div');
+            $(this).find("i").addClass('fa-minus');
+            $(this).addClass('btn-danger');
+            $(this).removeClass('btn-success');
+            $(this).find("i").removeClass('fa-plus');
+            i = i + 1;
+        });
+
+        $(document).on('click', ".plus_button", function() {
+            // Add ingredients
+            $(this).parents(".append_div").append('<div class="form-row"><div class="form-group col-md-10"><label for="secondary_email_address">Secondary Email Address</label><input type="email" class="form-control" id="secondary_email_address" name="secondary_email_address" aria-describedby="emailHelp" placeholder="Enter Secondary Email Address" required></div><div class="form-group col-md-1"><label>&nbsp;</label><br><a class="btn btn-success plus_button" id="add_ingredients_list" style="color:#fff"><i class="fa fa-plus"></i></a></div></div>');
+
+            $(this).addClass('remove_div');
+            $(this).removeClass('plus_button');
+            $(this).find("i").addClass('fa-minus');
+            $(this).find("i").removeClass('fa-plus');
+            $(this).addClass('btn-danger');
+            $(this).removeClass('btn-success');
+            i = i + 1;
+        });
+
+        $(document).on('click', ".remove_div", function() {
+            $(this).closest('.form-row').remove();
+
+        });
+
+
+</script>
+{% endblock %}
+	

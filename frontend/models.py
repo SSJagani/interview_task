@@ -57,3 +57,13 @@ class OTPVerification(models.Model):
     class Meta:
         db_table = 'otp_verification'
 
+
+class UserSecondaryEmail(models.Model):
+	id = models.AutoField(primary_key=True)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	email = models.EmailField(max_length=255, unique=True)
+	create_at = models.DateField(auto_now_add=True)
+	update_at = models.DateField(auto_now=True)
+
+	class Meta:
+		db_table = 'user_secondary_email'

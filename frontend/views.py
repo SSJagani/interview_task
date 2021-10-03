@@ -11,7 +11,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 # Import all Model
-from .models import User,OTPVerification
+from .models import User, OTPVerification, UserSecondaryEmail
 
 # Create your views here.
 def login(request):
@@ -156,5 +156,33 @@ def check_user_email(request):
 
 
 def dashboard(request):
-	print(request.session['user_id'])
-	return HttpResponse("hellooo")
+	qry_user = User.objects.get(user_id=request.session['user_id'])
+	qry_email_user = UserSecondaryEmail.objects.filter(user=qry_user.user_id)
+	context = {
+		'User': qry_user,
+		'User_email': qry_email_user,
+	}
+	return render(request, 'frontend/dashboard.html', context)
+
+def update_user_profile(request):
+	if request.method == 'POST':
+		user_id = request.POST['user_id']
+		user_name = request.POST['user_name']
+		mobile_number = request.POST['mobile_number']
+		primary_email_address = request.POST['primary_email_address']
+		secondary_email_address = dict(request.POST)['secondary_email_address']
+
+		qry_user = User.objects.get(user_id=user_id)
+		try:
+			qry_user.primary_email_address = primary_email_address
+			qry_user.save()
+		except:
+			pass
+		UserSecondaryEmail.objects.filter(user=qry_user.user_id).delete()
+		for i in secondary_email_address:
+			try:
+				qry_secondary_email = UserSecondaryEmail(user=qry_user,email=i)
+				qry_secondary_email.save()
+			except:
+				pass
+		return redirect('/dashboard')

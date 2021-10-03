@@ -12,5 +12,7 @@ urlpatterns = [
 	path('check_user_email', views.check_user_email, name='check_user_email'),
 
 	path('dashboard', views.dashboard,  name='dashboard'),
+
+	path('update_user_profile', views.update_user_profile, name='update_user_profile'),
 	
 ]
