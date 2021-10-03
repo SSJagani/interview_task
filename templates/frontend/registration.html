@@ -1,0 +1,85 @@
+{% extends 'frontend/base.html' %}
+{% block title %}
+	Registration
+{% endblock %}
+
+{% block body %}
+	<div class="card">
+	  <h5 class="card-header">Registration</h5>
+	  <div class="card-body">
+	  	{% if messages %}
+          {% for message in messages %}
+			    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-0" role="alert">
+			        <strong>Message:</strong> {{ message }}
+			        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			            <span aria-hidden="true">&times;</span>
+			        </button>
+			    </div>
+			  {% endfor %}
+        {% endif %}
+
+	    <form action="/registration" method="post" enctype="multipart/form-data">
+	    	{% csrf_token %}
+			<div class="form-group">
+				<label for="user_name">User Name</label>
+				<input type="text" class="form-control" id="user_name" name="user_name" min="3" max="15" placeholder="Enter User Name" required>
+			</div>
+			<div class="form-group">
+				<label for="email_address">Email address</label>
+				<input type="email" class="form-control" id="email_address" name="email_address" aria-describedby="emailHelp" placeholder="Enter Email Address" required>
+			</div>
+			<div class="form-group">
+				<label for="mobile_number">Mobile Number</label>
+				<input type="text" class="form-control" id="mobile_number" name="mobile_number" pattern="[6-9]{1}[0-9]{9,10}" placeholder="Enter Mobile Number(Enter Mobile number without +91)" required>
+			</div>
+			
+			<div class="form-group">
+				<label for="password">Password</label>
+				<input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+			</div>
+			<div class="form-group">
+				<label for="confirm_password">Confrim Password</label>
+				<input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Password" required>
+				<span id='message'></span>
+			</div>
+			<button type="submit" class="btn btn-primary">Submit</button>
+		</form>
+	  </div>
+	</div>
+{% endblock %}
+
+{% block script %}
+	<script>
+	// <!------------ Check Email is Existing START---------------->
+    	$('#email_address').on('keyup', function () {
+        $.ajax({
+          url: '/check_user_email',
+          type:'POST',
+          headers:{
+    				'X-CSRFToken': csrftoken,
+    			},
+          data: {'email': $(this).val()},
+          dataType: 'json',
+          async:false,
+          success: function (data) {
+          	console.log(data)
+            if(data['status'] == true){
+        		alert(data['message']);
+            }
+          }
+        });
+      });
+	// <!------------ Check Email is Existing END ---------------->
+
+
+    // <!----------- Check Password Form using jquery START ---------------->
+      $('#password, #confirm_password').on('keyup', function () {
+        if ($('#password').val() == $('#confirm_password').val()) {
+          $('#message').html('Matching').css('color', 'green');
+        } else 
+          $('#message').html('Not Matching').css('color', 'red');
+      });
+    // <!----------- Check Password Form using jquery END ---------------->
+
+	</script>
+{% endblock %}
