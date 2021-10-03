@@ -33,7 +33,7 @@ def login(request):
 				messages.error(request, 'You are multiple time wrong opt! wait 5 minutes for new opt')
 				return redirect('/')
 	else:
-		return render(request, 'frontend/login.html')
+		return render(request, 'authentication/login.html')
 
 
 def login_otp(request):
@@ -79,7 +79,29 @@ def login_otp(request):
 			'OTP': str(otp),
 		}
 
-		return render(request, 'frontend/login_otp.html', context=context)
+		return render(request, 'authentication/login_otp.html', context=context)
+
+
+def resend_otp(request):
+	if request.method == 'POST':
+		mobile_number = request.POST['mobile_number']
+		qry_check_user = User.objects.filter(mobile_number=mobile_number)
+		if not qry_check_user.exists():
+			messages.error(request, 'Mobile number not registered yet!')
+			return redirect('/resend_otp')
+		else:
+			now = pytz.utc.localize(datetime.now())
+			if qry_check_user[0].block_time is None or qry_check_user[0].block_time < now:
+				otp = randint(100000, 999999)
+				qry_qtp_verification = OTPVerification(mobile_number=mobile_number, otp=otp)
+				qry_qtp_verification.save()
+				request.session['mobile_number'] = mobile_number
+				return redirect('/login_otp')
+			else:
+				messages.error(request, 'You are multiple time wrong opt! wait 5 minutes for new opt')
+				return redirect('/')
+	else:
+		return render(request, 'authentication/resend_otp.html')
 
 
 def registration(request):
@@ -97,7 +119,7 @@ def registration(request):
 			qry_create_user.set_password(password)
 			qry_create_user.save()
 			subject = "Welcome to Our Company."
-			email_template_name = "frontend/welcome_mail.html"
+			email_template_name = "authentication/welcome_mail.html"
 			context = {
 				"User": qry_create_user,
 			}
@@ -113,7 +135,7 @@ def registration(request):
 		# client_ip = request.META['REMOTE_ADDR']
 
 	else:
-		return render(request, 'frontend/registration.html')
+		return render(request, 'authentication/registration.html')
 
 
 def check_user_email(request):
