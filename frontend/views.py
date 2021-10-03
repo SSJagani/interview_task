@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from random import randint
+from datetime import datetime, timedelta
+import pytz
 
 # Below lib use for email send
 from django.core.mail import send_mail, BadHeaderError
@@ -8,13 +11,75 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 # Import all Model
-from .models import User
+from .models import User,OTPVerification
 
 # Create your views here.
 def login(request):
-	print("hellooooo")
-	return HttpResponse("LOGIN")
+	if request.method == 'POST':
+		mobile_number = request.POST['mobile_number']
+		qry_check_user = User.objects.filter(mobile_number=mobile_number)
+		if not qry_check_user.exists():
+			messages.error(request, 'Mobile number not registered yet!')
+			return redirect('/')
+		else:
+			now = pytz.utc.localize(datetime.now())
+			if qry_check_user[0].block_time is None or qry_check_user[0].block_time < now:
+				otp = randint(100000, 999999)
+				qry_qtp_verification = OTPVerification(mobile_number=mobile_number, otp=otp)
+				qry_qtp_verification.save()
+				request.session['mobile_number'] = mobile_number
+				return redirect('/login_otp')
+			else:
+				messages.error(request, 'You are multiple time wrong opt! wait 5 minutes for new opt')
+				return redirect('/')
+	else:
+		return render(request, 'frontend/login.html')
 
+
+def login_otp(request):
+	if request.method == 'POST':
+		mobile_number = request.session['mobile_number']
+		otp = request.POST['otp']
+
+		now = datetime.now()
+		now_plus_5 = now + timedelta(minutes = 5)
+
+		qry_otp_verification = OTPVerification.objects.filter(
+				mobile_number=mobile_number,
+				otp=otp
+			).last()
+
+		if qry_otp_verification:
+			qry_otp_verification.delete()
+			qry_user = User.objects.get(mobile_number=mobile_number)
+			request.session['user_id'] = qry_user.user_id
+			del request.session['mobile_number']
+			return redirect('/dashboard')
+		else:
+			qry_check_user = User.objects.get(mobile_number=mobile_number)
+			if qry_check_user.login_try == 2:
+				messages.error(request, "Invalid OTP And user login should be blocked for 5 minutes!")
+				qry_check_user.login_try = 0
+				qry_check_user.block_time = now_plus_5
+				qry_check_user.save()
+				return redirect('/')
+			else:
+				qry_check_user.login_try+=1
+				messages.error(request, "Invalid OTP!")
+				qry_check_user.save()
+				return redirect('/login_otp')
+
+	else:	
+		mobile_number = request.session['mobile_number']
+
+		qry_otp_verification = OTPVerification.objects.filter(
+			mobile_number=mobile_number).last()
+		otp = qry_otp_verification.otp
+		context = {
+			'OTP': str(otp),
+		}
+
+		return render(request, 'frontend/login_otp.html', context=context)
 
 
 def registration(request):
@@ -51,7 +116,6 @@ def registration(request):
 		return render(request, 'frontend/registration.html')
 
 
-
 def check_user_email(request):
 	if request.method == 'POST':
 		email = request.POST['email']
@@ -67,3 +131,8 @@ def check_user_email(request):
 				'message': ''
 			}
 		return JsonResponse(context)
+
+
+def dashboard(request):
+	print(request.session['user_id'])
+	return HttpResponse("hellooo")

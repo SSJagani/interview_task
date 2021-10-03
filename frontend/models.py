@@ -36,7 +36,7 @@ class User(AbstractBaseUser):
 	is_admin = models.BooleanField(default=False)
 	
 	login_try = models.IntegerField(default=0)
-	block_time = models.TimeField(null=True)
+	block_time = models.DateTimeField(null=True)
 
 	create_at = models.DateField(auto_now_add=True)
 	update_at = models.DateField(auto_now=True)
@@ -47,3 +47,13 @@ class User(AbstractBaseUser):
 
 	class Meta:
 		db_table = 'user'
+
+
+class OTPVerification(models.Model):
+    mobile_number = models.CharField(max_length=20)
+    otp = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'otp_verification'
+

@@ -1,0 +1,39 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="card-body login-card-body">
+        <p class="login-box-msg">Enter OTP to start your session</p>
+
+        {% if messages %}
+            {% for msg in messages %}
+                <p class="login-box-msg" style="color: red">{{ msg }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <form action="/login_otp" method="post">{% csrf_token %}
+            <div class="input-group mb-3">
+                {% if OTP %}
+                    <input type="text" name="otp" class="form-control" placeholder="OTP" minlength="6" maxlength="6" value="{{ OTP }}">
+                {% endif %}
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fa fa-key"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-8"></div>
+                <div class="col-4">
+                    <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
